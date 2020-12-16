@@ -1,0 +1,126 @@
+version: '3.5'
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.22.0
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yaml
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    networks:
+      - loki
+
+  loki:
+    image: grafana/loki:2.0.0
+    container_name: loki
+    ports:
+      - '3100:3100'
+    expose:
+      - '3100'
+    volumes:
+      - ./config/loki:/etc/loki
+      - loki_data:/data/loki
+    command: -config.file=/etc/loki/loki-local-config.yaml
+    networks:
+      - loki
+
+  # promtail:
+  #   image: grafana/promtail:2.0.0
+  #   volumes:
+  #     - ./config/promtail:/etc/promtail
+
+  #   command: -config.file=/etc/promtail/promtail-docker-config.yaml
+  #   networks:
+  #     - loki
+
+  grafana:
+    image: grafana/grafana:7.3.4
+    container_name: grafana
+    environment:
+      - admin_password=password1
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource, redis-datasource
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - loki
+
+  redis:
+    image: redis:6.0.9
+    container_name: redis
+    # logging:
+    #   driver: 'loki'
+    #   options:
+    #     loki-url: http://localhost:3100/loki/api/v1/push
+    # ports:
+    # - 6379:6379
+    volumes:
+      # - ./data/redis:/var/lib/redis
+      - redis_data:/data
+      - ./config/redis:/usr/local/etc/redis/redis.conf
+        # - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    # entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - loki
+
+  api-test:
+    container_name: api-test
+    build:
+      context: './'
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - './:/usr/src/app'
+      # - /usr/src/app/node_modules
+      # - './test:/server/test'
+      # - './@hoppeh:/server/@hoppeh'
+    environment:
+      - NODE_ENV=development
+      - REDIS_SERVER=redis
+      - port=8080
+    ports:
+      - '8080:8080'
+    expose:
+      - '8080'
+    networks:
+      - loki
+
+  nginx:
+    image: nginx:1.19.5
+    container_name: nginx
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - '80:80'
+    environment:
+      # - NGINX_HOST=foobar.com
+      - NGINX_PORT=80
+    expose:
+      - '80'
+    logging:
+      driver: loki
+      options:
+        loki-url: 'http://localhost:3100/loki/api/v1/push'
+        # loki-time: out=1s
+        # loki-batch-size: 400
+        # loki-max-backoff: 1000ms
+        # mode: non-blocking
+        # max-buffer-size: 4m
+    networks:
+      - loki
+
+volumes:
+  redis_data:
+  grafana_data:
+  loki_data:
+  prometheus_data:
+
+networks:
+  loki:
+    name: backend

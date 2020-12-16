@@ -1,0 +1,9 @@
+{
+  "watch": ["./src/**/*", "./tine/**/*", "./models**/*"],
+  "ext": "ts, js",
+  "ignore": ["src/**/*.spec.ts"],
+  "execMap": {
+    "ts": "node --inspect=0.0.0.0:9230 -r ts-node/register"
+  },
+  "legacyWatch": "true"
+}

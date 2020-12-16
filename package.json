@@ -1,0 +1,39 @@
+{
+  "name": "grafana-loki",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./srv/index.ts",
+  "scripts": {
+    "start": "nodemon",
+    "start:prod": "node ./dist/src/index.js",
+    "test": "mocha -r ts-node/register ./src/**/*.test.ts --recursive",
+    "test:watch": "mocha -r ts-node/register ./src/**/*.test.ts --watch-extensions ts --watch --color"
+  },
+  "keywords": [],
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "cookie-session": "^1.4.0",
+    "cors": "^2.8.5",
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "helmet": "^4.1.1",
+    "morgan": "^1.10.0",
+    "prom-client": "^12.0.0",
+    "redis": "^3.0.2",
+    "save": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.19.1",
+    "@types/redis": "^2.8.28",
+    "chai": "^4.2.0",
+    "mocha": "^7.1.2",
+    "nodemon": "^2.0.6",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.5.1"
+  },
+  "author": "Tom-Egil Fossåskaret",
+  "license": "ISC"
+}
